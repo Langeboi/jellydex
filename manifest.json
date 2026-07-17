@@ -1,0 +1,12 @@
+[
+  {
+    "guid": "7f32c2c7-7d82-4f15-ae2b-a77a3d4e92c1",
+    "name": "Kommer Snart",
+    "description": "Regional digital-release calendar and next-episode schedule for Seerr requests inside Jellyfin Web.",
+    "overview": "Seerr release calendar for Jellyfin",
+    "owner": "Langeboi",
+    "category": "General",
+    "imageUrl": "https://raw.githubusercontent.com/Langeboi/jellydex/main/logo.svg",
+    "versions": []
+  }
+]

@@ -1,0 +1,85 @@
+name: Publish Jellyfin test release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - manifest.json
+      - README.md
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET 8 and 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Calculate test version
+        id: version
+        shell: bash
+        run: echo "value=0.1.${GITHUB_RUN_NUMBER}.0" >> "$GITHUB_OUTPUT"
+
+      - name: Validate browser script
+        run: node --check src/Jellyfin.Plugin.KommerSnart/Web/kommer-snart.js
+
+      - name: Test Jellyfin 10.10 build
+        run: dotnet test --configuration Release -p:JellyfinVersion=10.10.7
+
+      - name: Test Jellyfin 10.11 build
+        run: dotnet test --configuration Release -p:JellyfinVersion=10.11.0
+
+      - name: Build catalog packages
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        shell: bash
+        run: |
+          ./scripts/build-release.sh "$VERSION" "10.10.7" "10.10"
+          ./scripts/build-release.sh "$VERSION" "10.11.0" "10.11"
+
+      - name: Generate catalog manifest
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+          REPOSITORY: ${{ github.repository }}
+        run: node scripts/update-manifest.mjs "$VERSION" "$REPOSITORY"
+
+      - name: Publish GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        shell: bash
+        run: |
+          gh release create "v$VERSION" \
+            artifacts/kommer-snart-"$VERSION"-jellyfin-10.10.zip \
+            artifacts/kommer-snart-"$VERSION"-jellyfin-10.11.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Kommer Snart $VERSION" \
+            --notes "Automatisk testutgivelse fra commit $GITHUB_SHA." \
+            --prerelease
+
+      - name: Commit updated Jellyfin catalog
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "catalog: publish $VERSION [skip ci]"
+          git push

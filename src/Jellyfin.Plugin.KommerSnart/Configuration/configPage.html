@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Kommer Snart</title>
+</head>
+<body>
+<div id="KommerSnartConfigPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <h2>Kommer Snart</h2>
+            <p>Viser digitale filmutgivelser og neste episode for innhold som er forespurt i Seerr.</p>
+
+            <form id="KommerSnartConfigForm">
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="Enabled" type="checkbox" is="emby-checkbox">
+                        <span>Aktiver fanen</span>
+                    </label>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SeerrUrl">Seerr URL</label>
+                    <input id="SeerrUrl" type="url" is="emby-input" required>
+                    <div class="fieldDescription">Server-til-server-adressen, for eksempel http://10.10.100.3:5050</div>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SeerrApiKey">Seerr API-nøkkel</label>
+                    <input id="SeerrApiKey" type="password" is="emby-input" autocomplete="off" required>
+                    <div class="fieldDescription">Finnes i Seerr → Settings → General. Nøkkelen sendes aldri til nettleseren.</div>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="Region">Region</label>
+                    <input id="Region" type="text" is="emby-input" minlength="2" maxlength="2" required>
+                    <div class="fieldDescription">ISO-landkode brukt for digitale filmdatoer, for eksempel NO, DK, SE eller US.</div>
+                </div>
+
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="IncludePendingRequests" type="checkbox" is="emby-checkbox">
+                        <span>Ta med forespørsler som venter på godkjenning</span>
+                    </label>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="DaysAhead">Dager frem i tid</label>
+                    <input id="DaysAhead" type="number" is="emby-input" min="7" max="730">
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="DaysBack">Behold nylige utgivelser i antall dager</label>
+                    <input id="DaysBack" type="number" is="emby-input" min="0" max="90">
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="CacheMinutes">Mellomlager i minutter</label>
+                    <input id="CacheMinutes" type="number" is="emby-input" min="1" max="180">
+                </div>
+
+                <div style="margin: 1.5em 0; padding: 1em; border-left: .25em solid #00a4dc;">
+                    Filmer bruker kun TMDB release type 4 («Digital») i valgt region. Kinodato brukes aldri.
+                    TMDB skiller ikke sikkert mellom abonnementstrømming og digital leie/kjøp; manglende dato vises derfor som ukjent.
+                </div>
+
+                <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                    <span>Lagre</span>
+                </button>
+                <button id="TestConnection" is="emby-button" type="button" class="raised block emby-button">
+                    <span>Test Seerr-tilkoblingen</span>
+                </button>
+                <div id="ConnectionResult" class="fieldDescription" style="margin-top: 1em;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var pluginId = '7f32c2c7-7d82-4f15-ae2b-a77a3d4e92c1';
+            var page = document.querySelector('#KommerSnartConfigPage');
+            var form = document.querySelector('#KommerSnartConfigForm');
+
+            function value(id) {
+                return document.querySelector('#' + id);
+            }
+
+            function load() {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    value('Enabled').checked = config.Enabled;
+                    value('SeerrUrl').value = config.SeerrUrl || 'http://10.10.100.3:5050';
+                    value('SeerrApiKey').value = config.SeerrApiKey || '';
+                    value('Region').value = config.Region || 'NO';
+                    value('IncludePendingRequests').checked = config.IncludePendingRequests;
+                    value('DaysAhead').value = config.DaysAhead || 365;
+                    value('DaysBack').value = Number.isInteger(config.DaysBack) ? config.DaysBack : 14;
+                    value('CacheMinutes').value = config.CacheMinutes || 15;
+                    Dashboard.hideLoadingMsg();
+                });
+            }
+
+            function save() {
+                return ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    config.Enabled = value('Enabled').checked;
+                    config.SeerrUrl = value('SeerrUrl').value.trim().replace(/\/+$/, '');
+                    config.SeerrApiKey = value('SeerrApiKey').value.trim();
+                    config.Region = value('Region').value.trim().toUpperCase();
+                    config.IncludePendingRequests = value('IncludePendingRequests').checked;
+                    config.DaysAhead = Number(value('DaysAhead').value);
+                    config.DaysBack = Number(value('DaysBack').value);
+                    config.CacheMinutes = Number(value('CacheMinutes').value);
+                    return ApiClient.updatePluginConfiguration(pluginId, config);
+                });
+            }
+
+            page.addEventListener('pageshow', load);
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                Dashboard.showLoadingMsg();
+                save().then(Dashboard.processPluginConfigurationUpdateResult);
+                return false;
+            });
+
+            value('TestConnection').addEventListener('click', function () {
+                var result = value('ConnectionResult');
+                result.textContent = 'Tester…';
+                Dashboard.showLoadingMsg();
+                save()
+                    .then(function () {
+                        return ApiClient.fetch({
+                            url: ApiClient.getUrl('KommerSnart/Admin/Test'),
+                            type: 'POST',
+                            dataType: 'json',
+                            headers: { accept: 'application/json' }
+                        });
+                    })
+                    .then(function (response) {
+                        result.textContent = response.message || 'Tilkoblingen virker.';
+                    })
+                    .catch(function (error) {
+                        result.textContent = 'Tilkoblingen feilet. Kontroller URL og API-nøkkel.';
+                        console.error('Kommer Snart connection test failed', error);
+                    })
+                    .finally(function () {
+                        Dashboard.hideLoadingMsg();
+                    });
+            });
+        }());
+    </script>
+</div>
+</body>
+</html>

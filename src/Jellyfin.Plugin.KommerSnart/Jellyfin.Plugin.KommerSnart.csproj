@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <JellyfinVersion Condition="'$(JellyfinVersion)' == ''">10.11.0</JellyfinVersion>
+    <JellyfinNugetVersion Condition="$([System.String]::Copy('$(JellyfinVersion)').StartsWith('10.10'))">10.10.0</JellyfinNugetVersion>
+    <JellyfinNugetVersion Condition="$([System.String]::Copy('$(JellyfinVersion)').StartsWith('10.11'))">10.11.0</JellyfinNugetVersion>
+    <TargetFramework Condition="$([System.String]::Copy('$(JellyfinVersion)').StartsWith('10.10'))">net8.0</TargetFramework>
+    <TargetFramework Condition="$([System.String]::Copy('$(JellyfinVersion)').StartsWith('10.11'))">net9.0</TargetFramework>
+    <RootNamespace>Jellyfin.Plugin.KommerSnart</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.KommerSnart</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="$(JellyfinNugetVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Jellyfin.Model" Version="$(JellyfinNugetVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration/configPage.html" />
+    <EmbeddedResource Include="Web/kommer-snart.js" LogicalName="Jellyfin.Plugin.KommerSnart.Web.kommer-snart.js" />
+    <EmbeddedResource Include="Web/kommer-snart.css" LogicalName="Jellyfin.Plugin.KommerSnart.Web.kommer-snart.css" />
+    <EmbeddedResource Include="Web/tab.html" LogicalName="Jellyfin.Plugin.KommerSnart.Web.tab.html" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Kommer Snart</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00a4dc"/>
+      <stop offset="1" stop-color="#7b4dff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#111318"/>
+  <rect x="78" y="105" width="356" height="329" rx="46" fill="url(#g)"/>
+  <path d="M78 189h356v56H78z" fill="#111318" opacity=".86"/>
+  <path d="M158 73v77M354 73v77" stroke="#fff" stroke-width="32" stroke-linecap="round"/>
+  <path d="m220 285 104 60-104 60z" fill="#fff"/>
+</svg>
