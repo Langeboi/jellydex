@@ -70,7 +70,7 @@ jobs:
             artifacts/kommer-snart-"$VERSION"-jellyfin-10.11.zip \
             --repo "$GITHUB_REPOSITORY" \
             --title "Kommer Snart $VERSION" \
-            --notes "Automatisk testutgivelse fra commit $GITHUB_SHA." \
+            --notes "Automatisk testudgivelse fra commit $GITHUB_SHA." \
             --prerelease
 
       - name: Commit updated Jellyfin catalog

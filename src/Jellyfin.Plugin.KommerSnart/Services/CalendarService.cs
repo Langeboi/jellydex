@@ -16,6 +16,7 @@ public sealed class CalendarService
     private const int PageSize = 100;
     private const int MaximumRequests = 1000;
     private const int DigitalReleaseType = 4;
+    private const string UiLanguage = "da";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _cache;
@@ -91,7 +92,7 @@ public sealed class CalendarService
         return response;
     }
 
-    public async Task TestConnectionAsync(CancellationToken cancellationToken)
+    public async Task<int> TestConnectionAsync(CancellationToken cancellationToken)
     {
         var config = GetValidatedConfiguration();
         using var document = await GetJsonAsync(config, "auth/me", cancellationToken).ConfigureAwait(false);
@@ -99,6 +100,9 @@ public sealed class CalendarService
         {
             throw new InvalidOperationException("Seerr returned an unexpected response.");
         }
+
+        var requests = await GetRequestsAsync(config, cancellationToken).ConfigureAwait(false);
+        return requests.Count;
     }
 
     private static PluginConfiguration GetValidatedConfiguration()
@@ -191,7 +195,7 @@ public sealed class CalendarService
     {
         using var document = await GetJsonAsync(
             config,
-            $"{request.MediaType}/{request.TmdbId}",
+            $"{request.MediaType}/{request.TmdbId}?language={UiLanguage}",
             cancellationToken).ConfigureAwait(false);
         var details = document.RootElement;
 
@@ -324,7 +328,7 @@ public sealed class CalendarService
     private static string NormalizeRegion(string? region)
     {
         var normalized = region?.Trim().ToUpperInvariant();
-        return normalized is { Length: 2 } ? normalized : "NO";
+        return normalized is { Length: 2 } ? normalized : "DK";
     }
 
     private static string BuildCacheKey(PluginConfiguration config)

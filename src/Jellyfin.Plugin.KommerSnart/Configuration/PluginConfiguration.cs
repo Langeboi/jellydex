@@ -10,7 +10,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string SeerrApiKey { get; set; } = string.Empty;
 
-    public string Region { get; set; } = "NO";
+    public string Region { get; set; } = "DK";
 
     public bool IncludePendingRequests { get; set; } = true;
 

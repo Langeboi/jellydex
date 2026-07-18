@@ -30,7 +30,7 @@ public sealed class KommerSnartController : ControllerBase
         {
             return Problem(
                 statusCode: StatusCodes.Status502BadGateway,
-                title: "Kunne ikke hente kalenderen",
+                title: "Kalenderen kunne ikke hentes",
                 detail: exception.Message);
         }
     }
@@ -41,8 +41,12 @@ public sealed class KommerSnartController : ControllerBase
     {
         try
         {
-            await _calendarService.TestConnectionAsync(cancellationToken).ConfigureAwait(false);
-            return Ok(new { success = true, message = "Tilkoblingen til Seerr virker." });
+            var requestCount = await _calendarService.TestConnectionAsync(cancellationToken).ConfigureAwait(false);
+            return Ok(new
+            {
+                success = true,
+                message = $"Forbindelsen til Seerr virker. Fandt {requestCount} relevante anmodninger."
+            });
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {

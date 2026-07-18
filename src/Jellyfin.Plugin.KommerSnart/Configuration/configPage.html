@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="utf-8">
     <title>Kommer Snart</title>
@@ -12,66 +12,66 @@
     <div data-role="content">
         <div class="content-primary">
             <h2>Kommer Snart</h2>
-            <p>Viser digitale filmutgivelser og neste episode for innhold som er forespurt i Seerr.</p>
+            <p>Viser digitale filmudgivelser og næste episode for indhold, der er anmodet om i Seerr.</p>
 
             <form id="KommerSnartConfigForm">
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="Enabled" type="checkbox" is="emby-checkbox">
-                        <span>Aktiver fanen</span>
+                        <span>Aktivér fanen</span>
                     </label>
                 </div>
 
                 <div class="inputContainer">
                     <label class="inputLabel inputLabelUnfocused" for="SeerrUrl">Seerr URL</label>
                     <input id="SeerrUrl" type="url" is="emby-input" required>
-                    <div class="fieldDescription">Server-til-server-adressen, for eksempel http://10.10.100.3:5050</div>
+                    <div class="fieldDescription">Server-til-server-adressen, f.eks. http://10.10.100.3:5050</div>
                 </div>
 
                 <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="SeerrApiKey">Seerr API-nøkkel</label>
+                    <label class="inputLabel inputLabelUnfocused" for="SeerrApiKey">Seerr API-nøgle</label>
                     <input id="SeerrApiKey" type="password" is="emby-input" autocomplete="off" required>
-                    <div class="fieldDescription">Finnes i Seerr → Settings → General. Nøkkelen sendes aldri til nettleseren.</div>
+                    <div class="fieldDescription">Findes i Seerr → Settings → General. Nøglen sendes aldrig til browseren.</div>
                 </div>
 
                 <div class="inputContainer">
                     <label class="inputLabel inputLabelUnfocused" for="Region">Region</label>
                     <input id="Region" type="text" is="emby-input" minlength="2" maxlength="2" required>
-                    <div class="fieldDescription">ISO-landkode brukt for digitale filmdatoer, for eksempel NO, DK, SE eller US.</div>
+                    <div class="fieldDescription">ISO-landekode til digitale filmudgivelsesdatoer, f.eks. DK, NO, SE eller US. Regionen styrer datoerne, ikke sproget.</div>
                 </div>
 
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="IncludePendingRequests" type="checkbox" is="emby-checkbox">
-                        <span>Ta med forespørsler som venter på godkjenning</span>
+                        <span>Medtag anmodninger, der afventer godkendelse</span>
                     </label>
                 </div>
 
                 <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="DaysAhead">Dager frem i tid</label>
+                    <label class="inputLabel inputLabelUnfocused" for="DaysAhead">Dage frem i tiden</label>
                     <input id="DaysAhead" type="number" is="emby-input" min="7" max="730">
                 </div>
 
                 <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="DaysBack">Behold nylige utgivelser i antall dager</label>
+                    <label class="inputLabel inputLabelUnfocused" for="DaysBack">Behold nylige udgivelser i antal dage</label>
                     <input id="DaysBack" type="number" is="emby-input" min="0" max="90">
                 </div>
 
                 <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="CacheMinutes">Mellomlager i minutter</label>
+                    <label class="inputLabel inputLabelUnfocused" for="CacheMinutes">Cache i minutter</label>
                     <input id="CacheMinutes" type="number" is="emby-input" min="1" max="180">
                 </div>
 
                 <div style="margin: 1.5em 0; padding: 1em; border-left: .25em solid #00a4dc;">
-                    Filmer bruker kun TMDB release type 4 («Digital») i valgt region. Kinodato brukes aldri.
-                    TMDB skiller ikke sikkert mellom abonnementstrømming og digital leie/kjøp; manglende dato vises derfor som ukjent.
+                    Film bruger kun TMDB-udgivelsestype 4 ("Digital") i den valgte region. Biografdatoen bruges aldrig.
+                    TMDB skelner ikke sikkert mellem abonnementstreaming og digital leje/køb; en manglende dato vises derfor som ukendt.
                 </div>
 
                 <button is="emby-button" type="submit" class="raised button-submit block emby-button">
-                    <span>Lagre</span>
+                    <span>Gem</span>
                 </button>
                 <button id="TestConnection" is="emby-button" type="button" class="raised block emby-button">
-                    <span>Test Seerr-tilkoblingen</span>
+                    <span>Test Seerr-forbindelsen</span>
                 </button>
                 <div id="ConnectionResult" class="fieldDescription" style="margin-top: 1em;"></div>
             </form>
@@ -94,7 +94,7 @@
                     value('Enabled').checked = config.Enabled;
                     value('SeerrUrl').value = config.SeerrUrl || 'http://10.10.100.3:5050';
                     value('SeerrApiKey').value = config.SeerrApiKey || '';
-                    value('Region').value = config.Region || 'NO';
+                    value('Region').value = config.Region || 'DK';
                     value('IncludePendingRequests').checked = config.IncludePendingRequests;
                     value('DaysAhead').value = config.DaysAhead || 365;
                     value('DaysBack').value = Number.isInteger(config.DaysBack) ? config.DaysBack : 14;
@@ -139,10 +139,10 @@
                         });
                     })
                     .then(function (response) {
-                        result.textContent = response.message || 'Tilkoblingen virker.';
+                        result.textContent = response.message || 'Forbindelsen virker.';
                     })
                     .catch(function (error) {
-                        result.textContent = 'Tilkoblingen feilet. Kontroller URL og API-nøkkel.';
+                        result.textContent = 'Forbindelsen mislykkedes. Kontrollér URL og API-nøgle.';
                         console.error('Kommer Snart connection test failed', error);
                     })
                     .finally(function () {

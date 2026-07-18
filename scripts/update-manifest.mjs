@@ -35,8 +35,8 @@ if (!plugin) {
 
 Object.assign(plugin, {
     name: 'Kommer Snart',
-    description: 'Regional digital-release calendar and next-episode schedule for Seerr requests inside Jellyfin Web.',
-    overview: 'Seerr release calendar for Jellyfin',
+    description: 'Regional kalender med digitale filmudgivelser og næste episode for Seerr-anmodninger i Jellyfin Web.',
+    overview: 'Seerr-udgivelseskalender til Jellyfin',
     owner: repository.split('/')[0],
     category: 'General',
     imageUrl: 'https://raw.githubusercontent.com/' + repository + '/main/logo.svg'
@@ -47,7 +47,7 @@ for (const variant of variants) {
     const filename = 'kommer-snart-' + version + '-jellyfin-' + variant.suffix + '.zip';
     plugin.versions.push({
         version,
-        changelog: 'Automatisk testutgivelse fra GitHub Actions.',
+        changelog: 'Automatisk testudgivelse fra GitHub Actions.',
         targetAbi: variant.targetAbi,
         sourceUrl: 'https://github.com/' + repository + '/releases/download/v' + version + '/' + filename,
         checksum: await checksum('artifacts/' + filename),

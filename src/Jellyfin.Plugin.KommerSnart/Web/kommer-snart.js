@@ -21,7 +21,12 @@
 
     function createTabButton() {
         var slider = document.querySelector('.emby-tabs-slider');
-        if (!slider || document.querySelector('#kommerSnartTabButton')) {
+        if (!slider) {
+            return;
+        }
+
+        if (document.querySelector('#kommerSnartTabButton')) {
+            reconcileCustomTabs(slider);
             return;
         }
 
@@ -46,6 +51,34 @@
         } else {
             slider.appendChild(button);
         }
+
+        reconcileCustomTabs(slider);
+    }
+
+    // Custom Tabs also starts at index 2. Reserve that slot for Kommer Snart and
+    // move entries such as "Tilføj Film/Serie" one place to the right.
+    function reconcileCustomTabs(slider) {
+        var ownButton = document.querySelector('#kommerSnartTabButton');
+        var ownContent = document.querySelector('#kommerSnartTab');
+        if (ownButton) {
+            ownButton.setAttribute('data-index', '2');
+        }
+        if (ownContent) {
+            ownContent.setAttribute('data-index', '2');
+        }
+
+        Array.prototype.forEach.call(
+            slider.querySelectorAll('[id^="customTabButton_"]'),
+            function (button, index) {
+                button.setAttribute('data-index', String(index + 3));
+            }
+        );
+        Array.prototype.forEach.call(
+            document.querySelectorAll('.pageTabContent[id^="customTab_"]'),
+            function (content, index) {
+                content.setAttribute('data-index', String(index + 3));
+            }
+        );
     }
 
     function initialize() {
@@ -91,7 +124,7 @@
         root.replaceChildren();
         var loading = document.createElement('div');
         loading.className = 'kommerSnartLoading';
-        loading.textContent = 'Henter kommende utgivelser…';
+        loading.textContent = 'Henter kommende udgivelser…';
         root.appendChild(loading);
     }
 
@@ -100,9 +133,9 @@
         var panel = document.createElement('div');
         panel.className = 'kommerSnartEmpty';
         var title = document.createElement('h2');
-        title.textContent = 'Kalenderen kunne ikke lastes';
+        title.textContent = 'Kalenderen kunne ikke indlæses';
         var text = document.createElement('p');
-        text.textContent = 'Kontroller Seerr-innstillingene i Jellyfin-administrasjonen.';
+        text.textContent = 'Kontrollér Seerr-indstillingerne i Jellyfin-administrationen.';
         panel.append(title, text);
         root.appendChild(panel);
     }
@@ -119,7 +152,7 @@
         if (!items.length) {
             var empty = document.createElement('div');
             empty.className = 'kommerSnartEmpty';
-            empty.textContent = 'Ingen forespurte utgivelser finnes i denne visningen.';
+            empty.textContent = 'Der er ingen anmodede udgivelser i denne visning.';
             root.appendChild(empty);
             return;
         }
@@ -151,7 +184,7 @@
         var title = document.createElement('h1');
         title.textContent = 'Kommer Snart';
         var subtitle = document.createElement('p');
-        subtitle.textContent = items.length + ' kommende og planlagte utgivelser i ' + (state.data.region || 'valgt region');
+        subtitle.textContent = items.length + ' kommende og planlagte udgivelser i ' + (state.data.region || 'den valgte region');
         copy.append(eyebrow, title, subtitle);
         hero.appendChild(copy);
         return hero;
@@ -162,7 +195,7 @@
         filters.className = 'kommerSnartFilters';
         [
             ['all', 'Alle'],
-            ['movie', 'Filmer'],
+            ['movie', 'Film'],
             ['tv', 'Serier']
         ].forEach(function (entry) {
             var button = document.createElement('button');
@@ -185,8 +218,8 @@
             var key = item.releaseDate ? item.releaseDate.slice(0, 7) : 'unknown';
             if (!byKey.has(key)) {
                 var label = key === 'unknown'
-                    ? 'Dato ikke annonsert'
-                    : new Intl.DateTimeFormat('nb-NO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+                    ? 'Dato ikke annonceret'
+                    : new Intl.DateTimeFormat('da-DK', { month: 'long', year: 'numeric', timeZone: 'UTC' })
                         .format(new Date(key + '-01T00:00:00Z'));
                 var group = { key: key, label: capitalize(label), items: [] };
                 byKey.set(key, group);
@@ -217,14 +250,14 @@
 
         var dateBadge = document.createElement('div');
         dateBadge.className = 'kommerSnartDateBadge';
-        dateBadge.textContent = item.releaseDate ? formatShortDate(item.releaseDate) : 'Ukjent dato';
+        dateBadge.textContent = item.releaseDate ? formatShortDate(item.releaseDate) : 'Ukendt dato';
         art.appendChild(dateBadge);
 
         var body = document.createElement('div');
         body.className = 'kommerSnartCardBody';
         var meta = document.createElement('div');
         meta.className = 'kommerSnartMeta';
-        meta.textContent = item.mediaType === 'movie' ? 'DIGITAL UTGIVELSE' : 'NESTE EPISODE';
+        meta.textContent = item.mediaType === 'movie' ? 'DIGITAL UDGIVELSE' : 'NÆSTE EPISODE';
         var title = document.createElement('h3');
         title.textContent = item.title;
         var detail = document.createElement('p');
@@ -236,8 +269,8 @@
             detail.textContent = formatLongDate(item.releaseDate);
         } else {
             detail.textContent = item.mediaType === 'movie'
-                ? 'Digital dato er ikke annonsert for regionen'
-                : 'Neste episode er ikke annonsert';
+                ? 'Den digitale dato er ikke annonceret for regionen'
+                : 'Næste episode er ikke annonceret';
         }
         body.append(meta, title, detail);
         card.append(art, body);
@@ -245,7 +278,7 @@
     }
 
     function formatShortDate(date) {
-        return new Intl.DateTimeFormat('nb-NO', {
+        return new Intl.DateTimeFormat('da-DK', {
             day: 'numeric',
             month: 'short',
             timeZone: 'UTC'
@@ -253,7 +286,7 @@
     }
 
     function formatLongDate(date) {
-        return capitalize(new Intl.DateTimeFormat('nb-NO', {
+        return capitalize(new Intl.DateTimeFormat('da-DK', {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
@@ -275,7 +308,7 @@
     }
 
     var observer = new MutationObserver(function () {
-        if (isHomePage() && !document.querySelector('#kommerSnartTabButton')) {
+        if (isHomePage()) {
             initialize();
         }
     });

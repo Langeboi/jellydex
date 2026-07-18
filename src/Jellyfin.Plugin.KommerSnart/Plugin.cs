@@ -21,7 +21,7 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public override string Name => "Kommer Snart";
 
-    public override string Description => "Release calendar for movies and series requested through Seerr.";
+    public override string Description => "Udgivelseskalender for film og serier, der er anmodet om via Seerr.";
 
     public override Guid Id => PluginId;
 

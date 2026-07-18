@@ -16,7 +16,7 @@ The interface follows Jellyfin's active CSS variables and has explicit support f
 2. Download the ZIP matching your Jellyfin version from this repository's releases.
 3. Extract `Jellyfin.Plugin.KommerSnart.dll` into a `Kommer Snart` directory below Jellyfin's plugin directory.
 4. Restart Jellyfin.
-5. Open **Dashboard → Plugins → Kommer Snart**, enter the Seerr URL and API key, select a two-letter region, and test the connection.
+5. Open **Dashboard → Plugins → Kommer Snart**, enter the Seerr URL and API key, select a two-letter region (DK is the default), and test the connection.
 
 The Seerr API key stays server-side. Calendar endpoints require an authenticated Jellyfin session, and configuration/test endpoints require administrator elevation.
 
@@ -39,4 +39,8 @@ Release archives are written to `artifacts/`. GitHub Actions publishes both vari
 - Movies show only TMDB digital dates for the configured region. Cinema dates are intentionally excluded.
 - TMDB does not reliably distinguish subscription streaming from digital rental or purchase.
 - Series show `nextEpisodeToAir` when Seerr provides it.
-- Items with no announced date remain visible under **Dato ikke annonsert**.
+- Items with no announced date remain visible under **Dato ikke annonceret**.
+
+The interface is Danish. The region setting only selects the country used for TMDB release dates; it does not change the interface language.
+
+When the Custom Tabs plugin is also installed, Kommer Snart reserves the first custom-tab position and shifts Custom Tabs entries (such as **Tilføj Film/Serie**) one position to the right.
