@@ -221,6 +221,21 @@
     border-radius: .85rem;
 }
 
+.kommerSnartWarnings {
+    background: hsla(38, 70%, 45%, .12);
+    border: 1px solid hsla(38, 70%, 58%, .38);
+    border-radius: .7rem;
+    color: var(--ks-text-muted);
+    display: grid;
+    gap: .35rem;
+    margin-bottom: 1.25rem;
+    padding: .85rem 1rem;
+}
+
+.kommerSnartWarnings strong {
+    color: inherit;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .kommerSnartRoot {
         animation: kommer-snart-page-in 320ms cubic-bezier(.22, 1, .36, 1);

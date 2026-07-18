@@ -37,7 +37,9 @@ jobs:
         run: echo "value=0.1.${GITHUB_RUN_NUMBER}.0" >> "$GITHUB_OUTPUT"
 
       - name: Validate browser script
-        run: node --check src/Jellyfin.Plugin.KommerSnart/Web/kommer-snart.js
+        run: |
+          node --check src/Jellyfin.Plugin.KommerSnart/Web/kommer-snart.js
+          node --test tests/browser-script.test.mjs
 
       - name: Test Jellyfin 10.10 build
         run: dotnet test --configuration Release -p:JellyfinVersion=10.10.7

@@ -6,6 +6,8 @@ public sealed class CalendarResponse
 
     public DateTimeOffset GeneratedAt { get; init; }
 
+    public int RequestCount { get; init; }
+
     public IReadOnlyList<CalendarItem> Items { get; init; } = [];
 
     public IReadOnlyList<string> Warnings { get; init; } = [];

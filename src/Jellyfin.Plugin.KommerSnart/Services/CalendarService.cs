@@ -16,6 +16,11 @@ public sealed class CalendarService
     private const int PageSize = 100;
     private const int MaximumRequests = 1000;
     private const int DigitalReleaseType = 4;
+    private const int RequestPending = 1;
+    private const int RequestApproved = 2;
+    private const int RequestDeclined = 3;
+    private const int RequestFailed = 4;
+    private const int RequestCompleted = 5;
     private const string UiLanguage = "da";
     private static readonly string[] MediaTypes = ["movie", "tv"];
 
@@ -78,6 +83,7 @@ public sealed class CalendarService
         {
             Region = NormalizeRegion(config.Region),
             GeneratedAt = DateTimeOffset.UtcNow,
+            RequestCount = requests.Count,
             Items = items
                 .OrderBy(item => item.ReleaseDate is null)
                 .ThenBy(item => item.ReleaseDate, StringComparer.Ordinal)
@@ -182,7 +188,10 @@ public sealed class CalendarService
         foreach (var result in results.EnumerateArray())
         {
             var status = JsonHelpers.Int32(result, "status");
-            if (status == 3 || (!includePendingRequests && status != 2))
+            var isIncluded = status == RequestApproved
+                || status == RequestCompleted
+                || (includePendingRequests && status == RequestPending);
+            if (!isIncluded || status == RequestDeclined || status == RequestFailed)
             {
                 continue;
             }

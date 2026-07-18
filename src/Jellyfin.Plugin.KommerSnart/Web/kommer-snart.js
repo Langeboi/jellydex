@@ -153,7 +153,7 @@
             dataType: 'json',
             headers: { accept: 'application/json' }
         }).then(function (data) {
-            state.data = data;
+            state.data = normalizeResponse(data);
             state.loaded = true;
             render(root);
         }).catch(function (error) {
@@ -162,6 +162,56 @@
         }).finally(function () {
             state.loading = false;
         });
+    }
+
+    function readProperty(source, camelName, pascalName) {
+        if (!source) {
+            return undefined;
+        }
+        if (Object.prototype.hasOwnProperty.call(source, camelName)) {
+            return source[camelName];
+        }
+        return source[pascalName];
+    }
+
+    function normalizeResponse(data) {
+        var rawItems = readProperty(data, 'items', 'Items');
+        if (!Array.isArray(rawItems)) {
+            rawItems = [];
+        }
+
+        var warnings = readProperty(data, 'warnings', 'Warnings');
+        if (!Array.isArray(warnings)) {
+            warnings = [];
+        }
+
+        var requestCount = readProperty(data, 'requestCount', 'RequestCount');
+        if (typeof requestCount !== 'number') {
+            requestCount = rawItems.length;
+        }
+
+        return {
+            region: readProperty(data, 'region', 'Region') || '',
+            generatedAt: readProperty(data, 'generatedAt', 'GeneratedAt'),
+            requestCount: requestCount,
+            warnings: warnings,
+            items: rawItems.map(function (item) {
+                return {
+                    tmdbId: readProperty(item, 'tmdbId', 'TmdbId'),
+                    mediaType: readProperty(item, 'mediaType', 'MediaType'),
+                    title: readProperty(item, 'title', 'Title') || '',
+                    overview: readProperty(item, 'overview', 'Overview'),
+                    posterPath: readProperty(item, 'posterPath', 'PosterPath'),
+                    releaseDate: readProperty(item, 'releaseDate', 'ReleaseDate'),
+                    dateSource: readProperty(item, 'dateSource', 'DateSource'),
+                    seasonNumber: readProperty(item, 'seasonNumber', 'SeasonNumber'),
+                    episodeNumber: readProperty(item, 'episodeNumber', 'EpisodeNumber'),
+                    episodeTitle: readProperty(item, 'episodeTitle', 'EpisodeTitle'),
+                    requestStatus: readProperty(item, 'requestStatus', 'RequestStatus'),
+                    mediaStatus: readProperty(item, 'mediaStatus', 'MediaStatus')
+                };
+            })
+        };
     }
 
     function renderLoading(root) {
@@ -193,10 +243,16 @@
         root.appendChild(buildHero(items));
         root.appendChild(buildFilters());
 
+        if (state.data.warnings.length) {
+            root.appendChild(buildWarnings(state.data.warnings));
+        }
+
         if (!items.length) {
             var empty = document.createElement('div');
             empty.className = 'kommerSnartEmpty';
-            empty.textContent = 'Der er ingen anmodede udgivelser i denne visning.';
+            empty.textContent = state.data.requestCount
+                ? state.data.requestCount + ' Seerr-anmodninger blev fundet, men ingen har en udgivelse i det valgte tidsrum.'
+                : 'Der blev ikke fundet nogen relevante Seerr-anmodninger.';
             root.appendChild(empty);
             return;
         }
@@ -216,6 +272,17 @@
             section.append(heading, grid);
             root.appendChild(section);
         });
+    }
+
+    function buildWarnings(warnings) {
+        var panel = document.createElement('div');
+        panel.className = 'kommerSnartWarnings';
+        var title = document.createElement('strong');
+        title.textContent = 'Nogle oplysninger kunne ikke hentes';
+        var text = document.createElement('span');
+        text.textContent = warnings.join(' ');
+        panel.append(title, text);
+        return panel;
     }
 
     function buildHero(items) {
@@ -374,6 +441,7 @@
     window.kommerSnartPlugin = {
         state: state,
         initialize: initialize,
+        normalizeResponse: normalizeResponse,
         reload: function () {
             state.loaded = false;
             state.data = null;
