@@ -25,6 +25,8 @@
             return;
         }
 
+        ensureTabContent();
+
         if (document.querySelector('#kommerSnartTabButton')) {
             reconcileCustomTabs(slider);
             return;
@@ -55,16 +57,54 @@
         reconcileCustomTabs(slider);
     }
 
+    function ensureTabContent() {
+        var existing = document.querySelector('#kommerSnartTab');
+        if (existing) {
+            if (!existing.querySelector('#kommerSnartRoot')) {
+                existing.appendChild(createCalendarRoot());
+            }
+            return existing;
+        }
+
+        var favorites = document.querySelector('#favoritesTab');
+        if (!favorites || !favorites.parentNode) {
+            return null;
+        }
+
+        var content = document.createElement('div');
+        content.className = 'tabContent pageTabContent';
+        content.id = 'kommerSnartTab';
+        content.setAttribute('data-index', '2');
+        content.appendChild(createCalendarRoot());
+        favorites.parentNode.insertBefore(content, favorites.nextSibling);
+        return content;
+    }
+
+    function createCalendarRoot() {
+        var root = document.createElement('div');
+        root.id = 'kommerSnartRoot';
+        root.className = 'sections kommerSnartRoot';
+        var loading = document.createElement('div');
+        loading.className = 'kommerSnartLoading';
+        loading.textContent = 'Henter kommende udgivelser…';
+        root.appendChild(loading);
+        return root;
+    }
+
     // Custom Tabs also starts at index 2. Reserve that slot for Kommer Snart and
     // move entries such as "Tilføj Film/Serie" one place to the right.
     function reconcileCustomTabs(slider) {
         var ownButton = document.querySelector('#kommerSnartTabButton');
-        var ownContent = document.querySelector('#kommerSnartTab');
+        var ownContent = ensureTabContent();
+        var favorites = document.querySelector('#favoritesTab');
         if (ownButton) {
             ownButton.setAttribute('data-index', '2');
         }
         if (ownContent) {
             ownContent.setAttribute('data-index', '2');
+            if (favorites && favorites.parentNode && favorites.nextSibling !== ownContent) {
+                favorites.parentNode.insertBefore(ownContent, favorites.nextSibling);
+            }
         }
 
         Array.prototype.forEach.call(
@@ -92,6 +132,10 @@
 
     function loadCalendar() {
         var root = document.querySelector('#kommerSnartRoot');
+        if (!root) {
+            ensureTabContent();
+            root = document.querySelector('#kommerSnartRoot');
+        }
         if (!root || state.loading) {
             return;
         }
