@@ -17,6 +17,7 @@ public sealed class CalendarService
     private const int MaximumRequests = 1000;
     private const int DigitalReleaseType = 4;
     private const string UiLanguage = "da";
+    private static readonly string[] MediaTypes = ["movie", "tv"];
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _cache;
@@ -133,52 +134,26 @@ public sealed class CalendarService
         CancellationToken cancellationToken)
     {
         var requests = new List<RequestReference>();
-        for (var skip = 0; skip < MaximumRequests; skip += PageSize)
+        foreach (var mediaType in MediaTypes)
         {
-            var path = string.Create(
-                CultureInfo.InvariantCulture,
-                $"request?take={PageSize}&skip={skip}&filter=all&sort=added&sortDirection=desc");
-            using var document = await GetJsonAsync(config, path, cancellationToken).ConfigureAwait(false);
-            if (!document.RootElement.TryGetProperty("results", out var results)
-                || results.ValueKind != JsonValueKind.Array)
+            for (var skip = 0; skip < MaximumRequests; skip += PageSize)
             {
-                throw new InvalidOperationException("Seerr's request response did not contain a results array.");
-            }
-
-            var count = 0;
-            foreach (var result in results.EnumerateArray())
-            {
-                count++;
-                var status = JsonHelpers.Int32(result, "status");
-                if (status == 3 || (!config.IncludePendingRequests && status != 2))
+                var path = string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"request?take={PageSize}&skip={skip}&filter=all&sort=added&sortDirection=desc&mediaType={mediaType}");
+                using var document = await GetJsonAsync(config, path, cancellationToken).ConfigureAwait(false);
+                if (!document.RootElement.TryGetProperty("results", out var results)
+                    || results.ValueKind != JsonValueKind.Array)
                 {
-                    continue;
+                    throw new InvalidOperationException("Seerr's request response did not contain a results array.");
                 }
 
-                if (!result.TryGetProperty("media", out var media) || media.ValueKind != JsonValueKind.Object)
+                requests.AddRange(ParseRequestPage(results, mediaType, config.IncludePendingRequests));
+
+                if (results.GetArrayLength() < PageSize)
                 {
-                    continue;
+                    break;
                 }
-
-                var mediaType = JsonHelpers.String(result, "type")
-                    ?? JsonHelpers.String(media, "mediaType")
-                    ?? string.Empty;
-                var tmdbId = JsonHelpers.Int32(media, "tmdbId");
-                if (tmdbId <= 0 || (mediaType != "movie" && mediaType != "tv"))
-                {
-                    continue;
-                }
-
-                requests.Add(new RequestReference(
-                    tmdbId,
-                    mediaType,
-                    status,
-                    JsonHelpers.Int32(media, "status")));
-            }
-
-            if (count < PageSize)
-            {
-                break;
             }
         }
 
@@ -186,6 +161,51 @@ public sealed class CalendarService
             .GroupBy(request => (request.MediaType, request.TmdbId))
             .Select(group => group.OrderByDescending(request => request.RequestStatus).First())
             .ToArray();
+    }
+
+    internal static IReadOnlyList<RequestReference> ParseRequestPage(
+        JsonElement results,
+        string mediaType,
+        bool includePendingRequests)
+    {
+        if (results.ValueKind != JsonValueKind.Array)
+        {
+            throw new ArgumentException("The request page must be a JSON array.", nameof(results));
+        }
+
+        if (!MediaTypes.Contains(mediaType, StringComparer.Ordinal))
+        {
+            throw new ArgumentOutOfRangeException(nameof(mediaType));
+        }
+
+        var requests = new List<RequestReference>();
+        foreach (var result in results.EnumerateArray())
+        {
+            var status = JsonHelpers.Int32(result, "status");
+            if (status == 3 || (!includePendingRequests && status != 2))
+            {
+                continue;
+            }
+
+            if (!result.TryGetProperty("media", out var media) || media.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var tmdbId = JsonHelpers.Int32(media, "tmdbId");
+            if (tmdbId <= 0)
+            {
+                continue;
+            }
+
+            requests.Add(new RequestReference(
+                tmdbId,
+                mediaType,
+                status,
+                JsonHelpers.Int32(media, "status")));
+        }
+
+        return requests;
     }
 
     private async Task<CalendarItem?> BuildCalendarItemAsync(
@@ -339,7 +359,7 @@ public sealed class CalendarService
             $"kommer-snart:{config.SeerrUrl}:{NormalizeRegion(config.Region)}:{config.IncludePendingRequests}:{config.DaysAhead}:{config.DaysBack}:{keyHash}");
     }
 
-    private sealed record RequestReference(
+    internal sealed record RequestReference(
         int TmdbId,
         string MediaType,
         int RequestStatus,
