@@ -9,6 +9,28 @@
     "imageUrl": "https://raw.githubusercontent.com/Langeboi/jellydex/main/logo.svg",
     "versions": [
       {
+        "version": "0.1.5.0",
+        "changelog": "Automatisk testudgivelse fra GitHub Actions.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Langeboi/jellydex/releases/download/v0.1.5.0/kommer-snart-0.1.5.0-jellyfin-10.11.zip",
+        "checksum": "12D83D3F091386249BD00E11472A8C03",
+        "timestamp": "2026-07-18T06:54:41.432Z",
+        "dependencies": [
+          "5e87cc92-571a-4d8d-8d98-d2d4147f9f90"
+        ]
+      },
+      {
+        "version": "0.1.5.0",
+        "changelog": "Automatisk testudgivelse fra GitHub Actions.",
+        "targetAbi": "10.10.7.0",
+        "sourceUrl": "https://github.com/Langeboi/jellydex/releases/download/v0.1.5.0/kommer-snart-0.1.5.0-jellyfin-10.10.zip",
+        "checksum": "D44CBF8B3C6D5691CE375662EE29A96B",
+        "timestamp": "2026-07-18T06:54:41.432Z",
+        "dependencies": [
+          "5e87cc92-571a-4d8d-8d98-d2d4147f9f90"
+        ]
+      },
+      {
         "version": "0.1.4.0",
         "changelog": "Automatisk testudgivelse fra GitHub Actions.",
         "targetAbi": "10.11.0.0",
